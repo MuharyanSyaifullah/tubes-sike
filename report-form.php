@@ -51,72 +51,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 require 'includes/header.php';
 ?>
 <div class="page-title">
-  <h2>Input Laporan Harian</h2>
-  <p>Form ini menyimpan laporan terapi dan bacaan sensor langsung ke MySQL.</p>
+    <h2>Input Laporan Harian</h2>
+    <p>Form ini menyimpan laporan terapi dan bacaan sensor langsung ke MySQL.</p>
 </div>
 
-<?php if ($message): ?><div class="alert success"><?= h($message) ?></div><?php endif; ?>
-<?php if ($error): ?><div class="alert error"><?= h($error) ?></div><?php endif; ?>
+<?php if ($message): ?>
+    <div class="alert success"><?= h($message) ?></div>
+<?php endif; ?>
 
-<form method="post" class="card mt-18">
-  <div class="form-grid">
-    <div>
-      <label class="label">Pasien</label>
-      <select name="patient_id" class="select" required>
-        <option value="">Pilih pasien</option>
-        <?php foreach ($patients as $patient): ?>
-          <option value="<?= (int)$patient['id'] ?>"><?= h($patient['name']) ?> - <?= h($patient['code']) ?></option>
-        <?php endforeach; ?>
-      </select>
+<?php if ($error): ?>
+    <div class="alert error"><?= h($error) ?></div>
+<?php endif; ?>
+
+<?php if ($message || $error): ?>
+<script>
+    window.initialPopup = {
+        title: '<?= $message ? "Berhasil" : "Gagal" ?>',
+        message: '<?= $message ? h($message) : h($error) ?>',
+        type: '<?= $message ? "success" : "error" ?>'
+    };
+</script>
+<?php endif; ?>
+
+<form method="post" class="card mt-18" style="padding: 32px;">
+    <h3 class="section-title">Informasi Umum</h3>
+    <div class="form-grid" style="margin-bottom: 28px;">
+        <div>
+            <label class="label">Pasien</label>
+            <select name="patient_id" class="select" required>
+                <option value="">Pilih pasien</option>
+                <?php foreach ($patients as $patient): ?>
+                    <option value="<?= (int)$patient['id'] ?>"><?= h($patient['name']) ?> - <?= h($patient['code']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div>
+            <label class="label">Tanggal Laporan</label>
+            <input name="report_date" class="input" type="date" value="<?= date('Y-m-d') ?>" required>
+        </div>
+        <div>
+            <label class="label">Jenis Aktivitas</label>
+            <select name="activity_type" class="select" required>
+                <option>Fisioterapi</option>
+                <option>Terapi Okupasi</option>
+                <option>Terapi Wicara</option>
+            </select>
+        </div>
     </div>
-    <div>
-      <label class="label">Tanggal Laporan</label>
-      <input name="report_date" class="input" type="date" value="<?= date('Y-m-d') ?>" required>
+
+    <h3 class="section-title">Data Sensor & Gyroscope</h3>
+    <div class="form-grid" style="margin-bottom: 28px;">
+        <div>
+            <label class="label">Sudut Angkat Kaki</label>
+            <input name="angle" class="input" type="number" step="0.01" value="45.00" required>
+        </div>
+        <div>
+            <label class="label">Gyro X</label>
+            <input name="gyro_x" class="input" type="number" step="0.01" value="1.20" required>
+        </div>
+        <div>
+            <label class="label">Gyro Y</label>
+            <input name="gyro_y" class="input" type="number" step="0.01" value="0.80" required>
+        </div>
+        <div>
+            <label class="label">Gyro Z</label>
+            <input name="gyro_z" class="input" type="number" step="0.01" value="0.60" required>
+        </div>
     </div>
-    <div>
-      <label class="label">Jenis Aktivitas</label>
-      <select name="activity_type" class="select" required>
-        <option>Fisioterapi</option>
-        <option>Terapi Okupasi</option>
-        <option>Terapi Wicara</option>
-      </select>
+
+    <h3 class="section-title">Penilaian Klinis</h3>
+    <div class="form-grid">
+        <div>
+            <label class="label">Skor Mobilitas</label>
+            <input name="mobility" class="input" type="number" min="1" max="5" value="4" required>
+        </div>
+        <div>
+            <label class="label">Skor Komunikasi</label>
+            <input name="communication" class="input" type="number" min="1" max="5" value="3" required>
+        </div>
+        <div>
+            <label class="label">Skor Sosial</label>
+            <input name="social_skills" class="input" type="number" min="1" max="5" value="3" required>
+        </div>
+        <div class="full">
+            <label class="label">Narasi Klinis</label>
+            <textarea name="narrative" class="textarea" rows="6" required>Pasien menunjukkan perkembangan yang cukup baik pada latihan hari ini.</textarea>
+        </div>
     </div>
-    <div>
-      <label class="label">Sudut Angkat Kaki</label>
-      <input name="angle" class="input" type="number" step="0.01" value="45.00" required>
+    <div class="footer-actions">
+        <button type="reset" class="btn btn-secondary">Reset</button>
+        <button type="submit" class="btn btn-primary">Simpan ke Database</button>
     </div>
-    <div>
-      <label class="label">Gyro X</label>
-      <input name="gyro_x" class="input" type="number" step="0.01" value="1.20" required>
-    </div>
-    <div>
-      <label class="label">Gyro Y</label>
-      <input name="gyro_y" class="input" type="number" step="0.01" value="0.80" required>
-    </div>
-    <div>
-      <label class="label">Gyro Z</label>
-      <input name="gyro_z" class="input" type="number" step="0.01" value="0.60" required>
-    </div>
-    <div>
-      <label class="label">Skor Mobilitas</label>
-      <input name="mobility" class="input" type="number" min="1" max="5" value="4" required>
-    </div>
-    <div>
-      <label class="label">Skor Komunikasi</label>
-      <input name="communication" class="input" type="number" min="1" max="5" value="3" required>
-    </div>
-    <div>
-      <label class="label">Skor Sosial</label>
-      <input name="social_skills" class="input" type="number" min="1" max="5" value="3" required>
-    </div>
-    <div class="full">
-      <label class="label">Narasi Klinis</label>
-      <textarea name="narrative" class="textarea" rows="6" required>Pasien menunjukkan perkembangan yang cukup baik pada latihan hari ini.</textarea>
-    </div>
-  </div>
-  <div class="footer-actions">
-    <button type="reset" class="btn btn-secondary">Reset</button>
-    <button type="submit" class="btn btn-primary">Simpan ke Database</button>
-  </div>
 </form>
 <?php require 'includes/footer.php'; ?>

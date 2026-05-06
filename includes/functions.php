@@ -50,8 +50,19 @@ function getSensorReadings(PDO $pdo, int $patientId): array
     return $stmt->fetchAll();
 }
 
-function getActivities(PDO $pdo): array
+function getActivities(PDO $pdo, ?int $patientId = null): array
 {
+    if ($patientId) {
+        $stmt = $pdo->prepare("SELECT r.report_date, r.activity_type, p.name
+                FROM reports r
+                JOIN patients p ON p.id = r.patient_id
+                WHERE r.patient_id = ?
+                ORDER BY r.id DESC
+                LIMIT 5");
+        $stmt->execute([$patientId]);
+        return $stmt->fetchAll();
+    }
+
     $sql = "SELECT r.report_date, r.activity_type, p.name
             FROM reports r
             JOIN patients p ON p.id = r.patient_id
@@ -62,7 +73,7 @@ function getActivities(PDO $pdo): array
 
 function getWatchlist(PDO $pdo): array
 {
-    $sql = "SELECT * FROM patients ORDER BY FIELD(status, 'high-risk', 'urgent', 'monitoring', 'stable'), progress ASC LIMIT 3";
+    $sql = "SELECT * FROM patients ORDER BY FIELD(status, 'high-risk', 'urgent', 'monitoring', 'stable'), progress ASC";
     return $pdo->query($sql)->fetchAll();
 }
 
