@@ -1,4 +1,13 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+if ($_SESSION['role'] === 'user') {
+    die('<h2 style="color: red; text-align: center; margin-top: 50px;">Akses Ditolak: Role Anda (User) tidak memiliki izin untuk menambah laporan terapi.</h2>');
+}
+
 require 'includes/db.php';
 require 'includes/functions.php';
 
@@ -54,14 +63,6 @@ require 'includes/header.php';
     <h2>Input Laporan Harian</h2>
     <p>Form ini menyimpan laporan terapi dan bacaan sensor langsung ke MySQL.</p>
 </div>
-
-<?php if ($message): ?>
-    <div class="alert success"><?= h($message) ?></div>
-<?php endif; ?>
-
-<?php if ($error): ?>
-    <div class="alert error"><?= h($error) ?></div>
-<?php endif; ?>
 
 <?php if ($message || $error): ?>
 <script>

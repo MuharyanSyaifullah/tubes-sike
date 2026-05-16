@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 require 'includes/db.php';
 require 'includes/functions.php';
 
@@ -37,6 +43,12 @@ require 'includes/header.php';
             <div class="item"><strong>Asesmen Terakhir</strong><span><?= h($patient['latest_assessment']) ?></span></div>
             <div class="item"><strong>Fase Rehabilitasi</strong><span><?= h($patient['phase']) ?></span></div>
         </div>
+        <?php if ($_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'admin'): ?>
+        <div class="mt-18" style="display: flex; gap: 12px;">
+            <a href="edit-patient.php?id=<?= $id ?>" class="btn btn-secondary" style="padding: 8px 16px;">Edit Data</a>
+            <a href="delete-patient.php?id=<?= $id ?>" class="btn btn-secondary" style="padding: 8px 16px; color: var(--danger); border-color: #f3c1be; background: #fffcfc;" onclick="return confirm('PERINGATAN!\n\nApakah Anda yakin ingin menghapus data pasien ini secara permanen? Semua riwayat laporan dan data sensor juga akan ikut terhapus.')">Hapus Pasien</a>
+        </div>
+        <?php endif; ?>
     </div>
 </section>
 

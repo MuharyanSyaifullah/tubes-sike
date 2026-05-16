@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 require 'includes/db.php';
 require 'includes/functions.php';
 
@@ -14,9 +20,11 @@ require 'includes/header.php';
         <h2>Daftar Pasien</h2>
         <p>Data pasien tersimpan permanen di database MySQL.</p>
     </div>
-    <div>
-        <a href="add-patient.php" class="btn btn-primary">+ Pasien Baru</a>
-    </div>
+    <?php if ($_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'admin'): ?>
+        <div>
+            <a href="add-patient.php" class="btn btn-primary">+ Pasien Baru</a>
+        </div>
+    <?php endif; ?>
 </div>
 
 <form id="search-form" class="search-row" method="get" style="background: var(--surface); padding: 12px; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow);">
@@ -58,7 +66,6 @@ require 'includes/header.php';
         </table>
     </div>
     <?php if (empty($patients)): ?>
-        <div class="alert error">Tidak ada pasien yang cocok dengan kata kunci pencarian.</div>
         <script>
             window.initialPopup = {
                 title: 'Pencarian tidak ditemukan',

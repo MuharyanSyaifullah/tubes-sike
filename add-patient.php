@@ -1,4 +1,13 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+if ($_SESSION['role'] === 'user') {
+    die('<h2 style="color: red; text-align: center; margin-top: 50px;">Akses Ditolak: Role Anda (User) tidak memiliki izin untuk menambah pasien.</h2>');
+}
+
 require 'includes/db.php';
 require 'includes/functions.php';
 

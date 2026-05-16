@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 require 'includes/db.php';
 require 'includes/functions.php';
 
@@ -24,7 +30,10 @@ require 'includes/header.php';
         <h2>Dashboard Monitoring</h2>
         <p>Ringkasan perkembangan pasien, laporan terapi, dan watchlist prioritas.</p>
     </div>
-    <div class="badge">Data dari MySQL</div>
+    <div style="display: flex; gap: 16px; align-items: center;">
+        <span class="muted" style="font-size: 14px;">Halo, <strong><?= htmlspecialchars($_SESSION['username']) ?></strong> <span style="background: var(--surface); padding: 2px 8px; border-radius: 12px; font-size: 12px; border: 1px solid var(--border);"><?= htmlspecialchars($_SESSION['role']) ?></span></span>
+        <a href="logout.php" class="btn btn-secondary" style="padding: 6px 12px; font-size: 14px;">Logout</a>
+    </div>
 </div>
 
 <section class="stats-grid">

@@ -1,5 +1,19 @@
 USE sik_rehabilitasi;
 
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('super_admin', 'admin', 'user') NOT NULL DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Password default untuk semua akun adalah: password
+INSERT INTO users (username, password, role) VALUES
+    ('superadmin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin'),
+    ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
+    ('user', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user');
+
 INSERT INTO patients (id, code, name, age, gender, address, diagnosis, disability_type, status, room, blood_type, admission_date, clinician, progress, phase, latest_assessment, heart_rate, spo2, blood_pressure) VALUES
     (1, 'PD-001', 'Budi Santoso', 52, 'L', 'Bandar Lampung', 'Hemiparesis Kiri', 'Neurological', 'stable', 'Rehab-01', 'O+', '2025-04-10', 'Dr. Sarah Wijaya', 74, 'Fase III', '2025-04-14 09:30:00', 84, 97, '120/80'),
     (2, 'PD-002', 'Siti Rahma', 47, 'P', 'Metro', 'Cerebral Palsy', 'Mobility', 'monitoring', 'Rehab-03', 'A+', '2025-04-09', 'Dr. Aris Pratama', 58, 'Fase II', '2025-04-14 08:15:00', 90, 95, '118/78'),
