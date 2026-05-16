@@ -12,10 +12,16 @@ require 'includes/functions.php';
 $error = '';
 $success = '';
 
+// --- AUTO-GENERATE KODE REKAM MEDIS ---
+$stmtCode = $pdo->query("SELECT id FROM patients ORDER BY id DESC LIMIT 1");
+$lastId = (int)$stmtCode->fetchColumn();
+$autoCode = 'RM-' . str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
+    $patient_code = trim($_POST['patient_code'] ?? '');
 
     if ($username && $password && $confirm_password) {
         if (strlen($password) < 8) {
@@ -34,11 +40,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                     
                     try {
-                        // Simpan user baru dengan role default 'user'
-                        $stmt = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'user')");
-                        $stmt->execute([$username, $hashed_password]);
+                        $pdo->beginTransaction();
+
+                        // 1. Buat record pasien baru secara otomatis
+                        $stmtPatient = $pdo->prepare("INSERT INTO patients (code, name, age, gender, address, diagnosis, disability_type, status, room, blood_type, admission_date, clinician, progress, phase, latest_assessment, heart_rate, spo2, blood_pressure) VALUES (?, ?, 0, 'L', 'Belum Diisi', 'Belum Didata', 'Mobility', 'stable', '-', '-', CURDATE(), '-', 0, 'Fase I', NOW(), 80, 98, '120/80')");
+                        $stmtPatient->execute([$patient_code, $username]);
+                        $patient_id = $pdo->lastInsertId();
+
+                        // 2. Simpan user baru dan tautkan ke ID pasien
+                        $stmt = $pdo->prepare("INSERT INTO users (username, password, role, patient_id) VALUES (?, ?, 'user', ?)");
+                        $stmt->execute([$username, $hashed_password, $patient_id]);
+                        
+                        $pdo->commit();
                         $success = 'Registrasi berhasil! Silakan kembali ke halaman login.';
                     } catch (Throwable $e) {
+                        $pdo->rollBack();
                         $error = 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage();
                     }
                 }
@@ -74,6 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="muted">Isi form di bawah untuk membuat akun</p>
         </div>
         
+        <label class="label">Kode Rekam Medis (Otomatis)</label>
+        <input type="text" name="patient_code" class="input" style="margin-bottom: 20px; background: #e8f3ea; color: var(--primary-dark); font-weight: bold; cursor: not-allowed; border-color: transparent;" value="<?= $autoCode ?>" readonly>
         
         <label class="label">Username</label><input type="text" name="username" class="input" style="margin-bottom: 20px;" placeholder="contoh : ryan" required autofocus>
         <label class="label">Password</label>

@@ -31,6 +31,7 @@ require 'includes/header.php';
     </div>
     <?php if ($_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'admin'): ?>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="print-patients.php?search=<?= urlencode($search) ?>" target="_blank" class="btn btn-secondary" style="box-shadow: var(--shadow); color: #2196F3; border-color: #bbdefb;">Cetak PDF</a>
             <a href="export-csv.php?search=<?= urlencode($search) ?>" class="btn btn-secondary" style="box-shadow: var(--shadow);">Export Excel</a>
             <a href="add-patient.php" class="btn btn-primary">+ Pasien Baru</a>
         </div>

@@ -19,6 +19,10 @@ if ($id) {
         $stmt = $pdo->prepare("DELETE FROM reports WHERE patient_id = ?");
         $stmt->execute([$id]);
         
+        // Putuskan tautan akun user dengan rekam medis yang akan dihapus
+        $stmt = $pdo->prepare("UPDATE users SET patient_id = NULL WHERE patient_id = ?");
+        $stmt->execute([$id]);
+
         // Terakhir, hapus biodata pasien
         $stmt = $pdo->prepare("DELETE FROM patients WHERE id = ?");
         $stmt->execute([$id]);

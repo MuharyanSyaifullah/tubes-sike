@@ -6,9 +6,16 @@ function h(?string $value): string
 
 function getSummary(PDO $pdo): array
 {
-    $totalPatients = (int)$pdo->query("SELECT COUNT(*) FROM patients")->fetchColumn();
-    $activeReports = (int)$pdo->query("SELECT COUNT(*) FROM reports")->fetchColumn();
-    $avgProgress = (int)$pdo->query("SELECT COALESCE(AVG(progress), 0) FROM patients")->fetchColumn();
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'user') {
+        $pid = $_SESSION['patient_id'] ?? 0;
+        $totalPatients = $pid ? 1 : 0;
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM reports WHERE patient_id = ?"); $stmt->execute([$pid]); $activeReports = (int)$stmt->fetchColumn();
+        $stmt = $pdo->prepare("SELECT COALESCE(AVG(progress), 0) FROM patients WHERE id = ?"); $stmt->execute([$pid]); $avgProgress = (int)$stmt->fetchColumn();
+    } else {
+        $totalPatients = (int)$pdo->query("SELECT COUNT(*) FROM patients")->fetchColumn();
+        $activeReports = (int)$pdo->query("SELECT COUNT(*) FROM reports")->fetchColumn();
+        $avgProgress = (int)$pdo->query("SELECT COALESCE(AVG(progress), 0) FROM patients")->fetchColumn();
+    }
 
     return [
         'totalPatients' => $totalPatients,
@@ -23,23 +30,48 @@ function getPatients(PDO $pdo, string $search = '', int $limit = 0, int $offset 
     if ($limit > 0) {
         $limitSql = " LIMIT $limit OFFSET $offset";
     }
+
+    $roleFilter = "";
+    $params = [];
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'user') {
+        $roleFilter = " WHERE id = :pid";
+        $params['pid'] = $_SESSION['patient_id'] ?? 0;
+    }
+
     if ($search !== '') {
-        $stmt = $pdo->prepare("SELECT * FROM patients WHERE name LIKE :q OR code LIKE :q OR diagnosis LIKE :q ORDER BY id DESC" . $limitSql);
-        $stmt->execute(['q' => "%$search%"]);
+        $searchCondition = " (name LIKE :q OR code LIKE :q OR diagnosis LIKE :q)";
+        $whereClause = $roleFilter ? $roleFilter . " AND " . $searchCondition : " WHERE " . $searchCondition;
+        $stmt = $pdo->prepare("SELECT * FROM patients" . $whereClause . " ORDER BY id DESC" . $limitSql);
+        $params['q'] = "%$search%";
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
-    return $pdo->query("SELECT * FROM patients ORDER BY id DESC" . $limitSql)->fetchAll();
+    $stmt = $pdo->prepare("SELECT * FROM patients" . $roleFilter . " ORDER BY id DESC" . $limitSql);
+    $stmt->execute($params);
+    return $stmt->fetchAll();
 }
 
 function getTotalPatientsCount(PDO $pdo, string $search = ''): int
 {
+    $roleFilter = "";
+    $params = [];
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'user') {
+        $roleFilter = " WHERE id = :pid";
+        $params['pid'] = $_SESSION['patient_id'] ?? 0;
+    }
+
     if ($search !== '') {
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM patients WHERE name LIKE :q OR code LIKE :q OR diagnosis LIKE :q");
-        $stmt->execute(['q' => "%$search%"]);
+        $searchCondition = " (name LIKE :q OR code LIKE :q OR diagnosis LIKE :q)";
+        $whereClause = $roleFilter ? $roleFilter . " AND " . $searchCondition : " WHERE " . $searchCondition;
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM patients" . $whereClause);
+        $params['q'] = "%$search%";
+        $stmt->execute($params);
         return (int)$stmt->fetchColumn();
     }
-    return (int)$pdo->query("SELECT COUNT(*) FROM patients")->fetchColumn();
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM patients" . $roleFilter);
+    $stmt->execute($params);
+    return (int)$stmt->fetchColumn();
 }
 
 function getPatientById(PDO $pdo, int $id): ?array
@@ -77,6 +109,10 @@ function getActivities(PDO $pdo, ?int $patientId = null): array
         return $stmt->fetchAll();
     }
 
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'user') {
+        return []; // Jangan tampilkan aktivitas pasien lain jika id tidak diset
+    }
+
     $sql = "SELECT r.report_date, r.activity_type, p.name
             FROM reports r
             JOIN patients p ON p.id = r.patient_id
@@ -87,8 +123,14 @@ function getActivities(PDO $pdo, ?int $patientId = null): array
 
 function getWatchlist(PDO $pdo): array
 {
-    $sql = "SELECT * FROM patients ORDER BY FIELD(status, 'high-risk', 'urgent', 'monitoring', 'stable'), progress ASC";
-    return $pdo->query($sql)->fetchAll();
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'user') {
+        $stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ?");
+        $stmt->execute([$_SESSION['patient_id'] ?? 0]);
+        return $stmt->fetchAll();
+    } else {
+        $sql = "SELECT * FROM patients ORDER BY FIELD(status, 'high-risk', 'urgent', 'monitoring', 'stable'), progress ASC";
+        return $pdo->query($sql)->fetchAll();
+    }
 }
 
 function statusLabel(string $status): string

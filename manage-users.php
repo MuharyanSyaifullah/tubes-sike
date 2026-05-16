@@ -17,8 +17,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $target_id = (int)($_POST['target_id'] ?? 0);
 
+    // 1. TAMBAH PENGGUNA BARU
+    if ($action === 'add_user') {
+        $new_username = trim($_POST['new_username'] ?? '');
+        $new_password = $_POST['new_password'] ?? '';
+        $new_role = $_POST['new_role'] ?? 'user';
+        $patient_id = !empty($_POST['patient_id']) ? (int)$_POST['patient_id'] : null;
+        if ($new_role === 'admin') $patient_id = null; // Admin tidak ditautkan ke pasien
+
+        if ($new_username && $new_password) {
+            if (strlen($new_password) < 8) {
+                $error = "Password minimal 8 karakter.";
+            } else {
+                $stmtCek = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+                $stmtCek->execute([$new_username]);
+                if ($stmtCek->fetch()) {
+                    $error = "Username sudah terdaftar, silakan gunakan yang lain.";
+                } else {
+                    $hashed = password_hash($new_password, PASSWORD_DEFAULT);
+                    $stmt = $pdo->prepare("INSERT INTO users (username, password, role, patient_id) VALUES (?, ?, ?, ?)");
+                    $stmt->execute([$new_username, $hashed, $new_role, $patient_id]);
+                    $success = "Pengguna baru berhasil ditambahkan!";
+                }
+            }
+        } else {
+            $error = "Username dan Password wajib diisi.";
+        }
+    }
     // Mencegah Super Admin tidak sengaja mengubah/menghapus akunnya sendiri
-    if ($target_id && $target_id !== $_SESSION['user_id']) {
+    elseif ($target_id && $target_id !== $_SESSION['user_id']) {
         if ($action === 'delete') {
             try {
                 $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
@@ -61,15 +88,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $admins = $pdo->query("SELECT * FROM users WHERE role = 'admin' ORDER BY id DESC")->fetchAll();
 // Ambil data User biasa
 $users = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY id DESC")->fetchAll();
+// Ambil data pasien untuk dropdown pilihan tautan akun
+$all_patients = $pdo->query("SELECT id, code, name FROM patients ORDER BY name ASC")->fetchAll();
 
 $pageTitle = 'Manage User';
 $activePage = 'manage-users';
 
 require 'includes/header.php';
 ?>
-<div class="page-title">
-    <h2>Manajemen Pengguna</h2>
-    <p>Halaman khusus Super Admin untuk mengelola akun Admin dan User.</p>
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+    <div class="page-title" style="margin-bottom: 0;">
+        <h2>Manajemen Pengguna</h2>
+        <p>Halaman khusus Super Admin untuk mengelola akun Admin dan User.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openAddUserModal()" style="box-shadow: var(--shadow);">+ Tambah Pengguna Baru</button>
 </div>
 
 <?php if ($success || $error): ?>
@@ -212,6 +244,45 @@ require 'includes/header.php';
     </div>
 </div>
 
+<!-- MODAL TAMBAH PENGGUNA BARU -->
+<div id="adduser-modal" class="page-loader" style="z-index: 6000;">
+    <div class="card" style="width: 100%; max-width: 400px; transform: none; animation: popIn 0.3s ease; background: var(--surface);">
+        <h3 style="margin-top: 0;">Tambah Pengguna Baru</h3>
+        <p class="muted">Buat akun untuk staf Admin atau Pasien (User).</p>
+        
+        <form method="post" style="margin-top: 20px;">
+            <input type="hidden" name="action" value="add_user">
+            
+            <label class="label">Username</label>
+            <input type="text" name="new_username" class="input" style="margin-bottom: 16px;" placeholder="contoh: budi_pasien" required>
+            
+            <label class="label">Password (Minimal 8 karakter)</label>
+            <input type="password" name="new_password" class="input" style="margin-bottom: 16px;" minlength="8" required>
+            
+            <label class="label">Hak Akses (Role)</label>
+            <select name="new_role" id="new_role_select" class="select" style="margin-bottom: 16px;" onchange="togglePatientSelect()" required>
+                <option value="admin">Staf / Admin</option>
+                <option value="user" selected>Pasien / Keluarga (User)</option>
+            </select>
+
+            <div id="patient_select_group">
+                <label class="label">Tautkan ke Rekam Medis (Opsional)</label>
+                <select name="patient_id" class="select" style="margin-bottom: 24px;">
+                    <option value="">-- Tidak ditautkan --</option>
+                    <?php foreach ($all_patients as $p): ?>
+                        <option value="<?= $p['id'] ?>"><?= h($p['code']) ?> - <?= h($p['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="closeAddUserModal()">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan Akun</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function openPasswordModal(id, username) {
     document.getElementById('modal-target-id').value = id;
@@ -225,5 +296,24 @@ function openPasswordModal(id, username) {
 function closePasswordModal() {
     document.getElementById('password-modal').classList.remove('visible');
 }
+
+function openAddUserModal() {
+    document.getElementById('adduser-modal').classList.add('visible');
+}
+
+function closeAddUserModal() {
+    document.getElementById('adduser-modal').classList.remove('visible');
+}
+
+function togglePatientSelect() {
+    const role = document.getElementById('new_role_select').value;
+    const group = document.getElementById('patient_select_group');
+    if (role === 'user') {
+        group.style.display = 'block';
+    } else {
+        group.style.display = 'none';
+    }
+}
+togglePatientSelect(); // Jalankan saat inisialisasi
 </script>
 <?php require 'includes/footer.php'; ?>

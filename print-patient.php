@@ -14,6 +14,10 @@ if (!$patient) {
     die('Pasien tidak ditemukan.');
 }
 
+if ($_SESSION['role'] === 'user' && $id !== (int)($_SESSION['patient_id'] ?? 0)) {
+    die('Akses ditolak: Anda hanya dapat mencetak rekam medis Anda sendiri.');
+}
+
 $reports = getPatientReports($pdo, $id);
 ?>
 <!DOCTYPE html>
@@ -85,7 +89,13 @@ $reports = getPatientReports($pdo, $id);
                 <tr>
                     <td><?= h($r['report_date']) ?></td>
                     <td><?= h($r['activity_type']) ?></td>
-                    <td><?= h($r['narrative']) ?></td>
+                    <td>
+                        <?php if ($_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'admin'): ?>
+                            <?= h($r['narrative']) ?>
+                        <?php else: ?>
+                            <em style="color: #999;">🔒 Catatan Rahasia (Restricted Access)</em>
+                        <?php endif; ?>
+                    </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

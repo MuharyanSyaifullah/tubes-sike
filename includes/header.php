@@ -24,7 +24,11 @@ if (!isset($pageTitle)) { $pageTitle = 'SIK Rehabilitasi'; }
             </div>
             <nav class="nav">
                 <a class="<?= ($activePage === 'dashboard') ? 'active' : '' ?>" href="index.php">Dashboard</a>
-                <a class="<?= ($activePage === 'patients') ? 'active' : '' ?>" href="patients.php">Pasien</a>
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'user'): ?>
+                    <a class="<?= ($activePage === 'patients') ? 'active' : '' ?>" href="patient-detail.php?id=<?= $_SESSION['patient_id'] ?? 0 ?>">Data Rekam Medis</a>
+                <?php else: ?>
+                    <a class="<?= ($activePage === 'patients') ? 'active' : '' ?>" href="patients.php">Pasien</a>
+                <?php endif; ?>
                 <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'admin')): ?>
                     <a class="<?= ($activePage === 'add-patient') ? 'active' : '' ?>" href="add-patient.php">Tambah Pasien</a>
                     <a class="<?= ($activePage === 'report-form') ? 'active' : '' ?>" href="report-form.php">Input Laporan</a>

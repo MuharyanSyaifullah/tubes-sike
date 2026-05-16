@@ -43,6 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// --- AUTO-GENERATE KODE REKAM MEDIS ---
+$stmtCode = $pdo->query("SELECT id FROM patients ORDER BY id DESC LIMIT 1");
+$lastId = (int)$stmtCode->fetchColumn();
+$autoCode = 'RM-' . str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
+
 require 'includes/header.php';
 ?>
 <div class="page-title">
@@ -64,8 +69,8 @@ require 'includes/header.php';
     <h3 class="section-title">Informasi Pribadi</h3>
     <div class="form-grid" style="margin-bottom: 28px;">
         <div>
-            <label class="label">Kode Rekam Medis (Wajib)</label>
-            <input name="code" class="input" type="text" placeholder="Misal: PD-004" required>
+            <label class="label">Kode Rekam Medis (Otomatis)</label>
+            <input name="code" class="input" type="text" value="<?= $autoCode ?>" readonly style="background: #e8f3ea; color: var(--primary-dark); font-weight: bold; cursor: not-allowed; border-color: transparent;">
         </div>
         <div>
             <label class="label">Nama Lengkap (Wajib)</label>

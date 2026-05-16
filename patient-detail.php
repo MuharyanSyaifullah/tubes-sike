@@ -15,8 +15,13 @@ if (!$patient) {
     die('Pasien tidak ditemukan.');
 }
 
-$pageTitle = 'Detail Pasien';
-$activePage = '';
+// Proteksi: User hanya boleh melihat datanya sendiri
+if ($_SESSION['role'] === 'user' && $id !== (int)($_SESSION['patient_id'])) {
+    die('<h2 style="color: red; text-align: center; margin-top: 50px;">Akses Ditolak: Anda hanya dapat melihat rekam medis Anda sendiri.</h2>');
+}
+
+$pageTitle = ($_SESSION['role'] === 'user') ? 'Data Rekam Medis' : 'Detail Pasien';
+$activePage = 'patients';
 $reports = getPatientReports($pdo, $id);
 $sensors = getSensorReadings($pdo, $id);
 
@@ -75,7 +80,11 @@ require 'includes/header.php';
             <?php foreach ($reports as $report): ?>
                 <li>
                     <strong><?= h($report['report_date']) ?> - <?= h($report['activity_type']) ?></strong><br>
-                    <span class="muted"><?= h($report['narrative']) ?></span>
+                    <?php if ($_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'admin'): ?>
+                        <span class="muted"><?= h($report['narrative']) ?></span>
+                    <?php else: ?>
+                        <span class="muted" style="font-style: italic; color: #a43d35;">🔒 Detail narasi klinis disembunyikan untuk melindungi privasi medis.</span>
+                    <?php endif; ?>
                 </li>
             <?php endforeach; ?>
         </ul>

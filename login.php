@@ -13,18 +13,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
 
     if ($username && $password) {
-        $stmt = $pdo->prepare("SELECT id, username, password, role FROM users WHERE username = ?");
+        $stmt = $pdo->prepare("SELECT id, username, password, role, patient_id FROM users WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['role'] = $user['role'];
-            header('Location: index.php');
-            exit;
+        if ($user) {
+            // Jika user ditemukan, cocokan password-nya
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['role'] = $user['role'];
+                $_SESSION['patient_id'] = $user['patient_id'];
+                header('Location: index.php');
+                exit;
+            } else {
+                $error = 'Password yang Anda masukkan salah!';
+            }
         } else {
-            $error = 'Username atau password salah!';
+            $error = 'Akun belum terdaftar!';
         }
     } else {
         $error = 'Mohon isi username dan password.';
