@@ -17,15 +17,29 @@ function getSummary(PDO $pdo): array
     ];
 }
 
-function getPatients(PDO $pdo, string $search = ''): array
+function getPatients(PDO $pdo, string $search = '', int $limit = 0, int $offset = 0): array
 {
+    $limitSql = "";
+    if ($limit > 0) {
+        $limitSql = " LIMIT $limit OFFSET $offset";
+    }
     if ($search !== '') {
-        $stmt = $pdo->prepare("SELECT * FROM patients WHERE name LIKE :q OR code LIKE :q OR diagnosis LIKE :q ORDER BY id DESC");
+        $stmt = $pdo->prepare("SELECT * FROM patients WHERE name LIKE :q OR code LIKE :q OR diagnosis LIKE :q ORDER BY id DESC" . $limitSql);
         $stmt->execute(['q' => "%$search%"]);
         return $stmt->fetchAll();
     }
 
-    return $pdo->query("SELECT * FROM patients ORDER BY id DESC")->fetchAll();
+    return $pdo->query("SELECT * FROM patients ORDER BY id DESC" . $limitSql)->fetchAll();
+}
+
+function getTotalPatientsCount(PDO $pdo, string $search = ''): int
+{
+    if ($search !== '') {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM patients WHERE name LIKE :q OR code LIKE :q OR diagnosis LIKE :q");
+        $stmt->execute(['q' => "%$search%"]);
+        return (int)$stmt->fetchColumn();
+    }
+    return (int)$pdo->query("SELECT COUNT(*) FROM patients")->fetchColumn();
 }
 
 function getPatientById(PDO $pdo, int $id): ?array

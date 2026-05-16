@@ -33,7 +33,7 @@ button, input, select, textarea { font: inherit; }
   to { opacity: 1; transform: translateX(0); }
 }
 .sidebar {
-  background: #f4fbf6;
+  background: #d4f0ea;
   border-right: 1px solid var(--border);
   padding: 32px 24px;
   position: sticky;
@@ -87,6 +87,23 @@ button, input, select, textarea { font: inherit; }
 .main > *:nth-child(3) { animation-delay: 0.3s; }
 .main > *:nth-child(4) { animation-delay: 0.4s; }
 .main > *:nth-child(5) { animation-delay: 0.5s; }
+
+.global-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 16px 40px;
+  margin: -32px -40px 32px -40px;
+  background: rgba(212, 240, 234, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(223, 232, 226, 0.8);
+  transition: background 0.3s ease, backdrop-filter 0.3s ease, border-color 0.3s ease;
+}
+.global-topbar.transparent {
+  background: rgba(212, 240, 234, 0.1);
+  backdrop-filter: blur(4px);
+  border-color: transparent;
+}
 
 .topbar {
   display: flex;
@@ -297,7 +314,8 @@ button, input, select, textarea { font: inherit; }
   transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 .btn:hover { transform: translateY(-2px); }
-.btn-primary { background: var(--primary-dark); color: white; box-shadow: 0 14px 24px rgba(53, 92, 70, 0.18); }
+.btn-primary { background: #26a69a; color: white; box-shadow: 0 14px 24px rgba(38, 166, 154, 0.25); }
+.btn-primary:hover { background: #00897b; }
 .btn-secondary {
   background: #ffffff;
   border: 1px solid rgba(223, 232, 226, 0.95);
@@ -423,8 +441,19 @@ button, input, select, textarea { font: inherit; }
 }
 @media (max-width: 960px) {
   .layout { grid-template-columns: 1fr; }
-  .sidebar { position: static; height: auto; }
+  .sidebar {
+    position: fixed; left: -320px; top: 0; bottom: 0; height: 100vh;
+    z-index: 2000; transition: left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 10px 0 30px rgba(23, 39, 31, 0.15);
+  }
+  .sidebar.show { left: 0; }
+  #mobile-menu-btn { display: block !important; }
+  .hide-mobile { display: none !important; }
   .stats-grid, .grid-2, .grid-3, .form-grid, .patient-header, .kv { grid-template-columns: 1fr; }
   .slider-card { width: 100%; }
   .main { padding: 18px; }
+  .global-topbar {
+    padding: 16px 18px;
+    margin: -18px -18px 24px -18px;
+  }
 }

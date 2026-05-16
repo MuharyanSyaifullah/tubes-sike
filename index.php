@@ -30,10 +30,6 @@ require 'includes/header.php';
         <h2>Dashboard Monitoring</h2>
         <p>Ringkasan perkembangan pasien, laporan terapi, dan watchlist prioritas.</p>
     </div>
-    <div style="display: flex; gap: 16px; align-items: center;">
-        <span class="muted" style="font-size: 14px;">Halo, <strong><?= htmlspecialchars($_SESSION['username']) ?></strong> <span style="background: var(--surface); padding: 2px 8px; border-radius: 12px; font-size: 12px; border: 1px solid var(--border);"><?= htmlspecialchars($_SESSION['role']) ?></span></span>
-        <a href="logout.php" class="btn btn-secondary" style="padding: 6px 12px; font-size: 14px;">Logout</a>
-    </div>
 </div>
 
 <section class="stats-grid">
@@ -75,8 +71,11 @@ require 'includes/header.php';
 </section>
 
 <section class="mt-18">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
         <h3 style="margin: 0;">Critical Watchlist</h3>
+        <div style="flex: 1; min-width: 200px; max-width: 400px; margin-left: auto;">
+            <input type="text" id="dashboard-search" class="input" placeholder="Cari nama atau ruangan pasien..." style="padding: 10px 16px; border-radius: 20px;">
+        </div>
         <div style="display: flex; gap: 8px;">
             <button class="btn btn-secondary" onclick="slideWatchlist(-1)" style="padding: 8px 16px; font-size: 16px; border-radius: 12px;">&#10094;</button>
             <button class="btn btn-secondary" onclick="slideWatchlist(1)" style="padding: 8px 16px; font-size: 16px; border-radius: 12px;">&#10095;</button>
@@ -108,31 +107,63 @@ require 'includes/header.php';
     </div>
 
     <script>
+        // Logika Pencarian Langsung (Instan) di Watchlist
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('dashboard-search');
+            const track = document.getElementById('watchlist-track');
+            
+            if (searchInput && track) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase();
+                    const cards = track.querySelectorAll('.slider-card');
+                    
+                    cards.forEach(card => {
+                        const name = card.querySelector('h4').innerText.toLowerCase();
+                        const details = card.querySelector('.muted').innerText.toLowerCase();
+                        if (name.includes(query) || details.includes(query)) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+
         let isSliding = false;
 
         function slideWatchlist(direction) {
             if (isSliding) return;
             const track = document.getElementById('watchlist-track');
             if (!track || track.children.length < 2) return;
+            
+            // Cari kartu pertama yang sedang tidak disembunyikan (visible)
+            const firstVisibleCard = Array.from(track.children).find(c => c.style.display !== 'none');
+            if (!firstVisibleCard) return;
 
             // Jika semua kartu sudah muat di layar, tidak perlu digeser
             if (track.scrollWidth <= track.clientWidth + 10) return;
 
             isSliding = true;
-            const cardWidth = track.firstElementChild.offsetWidth + 20;
+            const cardWidth = firstVisibleCard.offsetWidth + 20;
+            const isSearching = document.getElementById('dashboard-search').value.trim() !== '';
             track.style.scrollSnapType = 'none'; // Matikan snap sementara agar mulus
 
             if (direction === 1) { // Kanan
                 track.scrollBy({ left: cardWidth, behavior: 'smooth' });
                 setTimeout(() => {
-                    track.appendChild(track.firstElementChild); // Pindah kartu awal ke ujung
-                    track.scrollLeft -= cardWidth; // Sesuaikan scroll secara transparan
+                    if (!isSearching) {
+                        track.appendChild(track.firstElementChild); // Pindah kartu awal ke ujung
+                        track.scrollLeft -= cardWidth; // Sesuaikan scroll secara transparan
+                    }
                     track.style.scrollSnapType = 'x mandatory';
                     isSliding = false;
                 }, 350);
             } else { // Kiri
-                track.prepend(track.lastElementChild); // Pindah kartu ujung ke awal
-                track.scrollLeft += cardWidth;
+                if (!isSearching) {
+                    track.prepend(track.lastElementChild); // Pindah kartu ujung ke awal
+                    track.scrollLeft += cardWidth;
+                }
                 
                 requestAnimationFrame(() => {
                     track.scrollBy({ left: -cardWidth, behavior: 'smooth' });

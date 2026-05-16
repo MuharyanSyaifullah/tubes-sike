@@ -43,12 +43,13 @@ require 'includes/header.php';
             <div class="item"><strong>Asesmen Terakhir</strong><span><?= h($patient['latest_assessment']) ?></span></div>
             <div class="item"><strong>Fase Rehabilitasi</strong><span><?= h($patient['phase']) ?></span></div>
         </div>
+        <div class="mt-18" style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="print-patient.php?id=<?= $id ?>" target="_blank" class="btn btn-primary" style="padding: 8px 16px; background: #2196F3; box-shadow: 0 14px 24px rgba(33, 150, 243, 0.18);">Cetak Laporan PDF</a>
         <?php if ($_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'admin'): ?>
-        <div class="mt-18" style="display: flex; gap: 12px;">
             <a href="edit-patient.php?id=<?= $id ?>" class="btn btn-secondary" style="padding: 8px 16px;">Edit Data</a>
             <a href="delete-patient.php?id=<?= $id ?>" class="btn btn-secondary" style="padding: 8px 16px; color: var(--danger); border-color: #f3c1be; background: #fffcfc;" onclick="return confirm('PERINGATAN!\n\nApakah Anda yakin ingin menghapus data pasien ini secara permanen? Semua riwayat laporan dan data sensor juga akan ikut terhapus.')">Hapus Pasien</a>
-        </div>
         <?php endif; ?>
+        </div>
     </div>
 </section>
 

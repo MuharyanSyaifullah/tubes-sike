@@ -12,6 +12,45 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('pageshow', () => {
             loader.classList.remove('visible');
         });
+
+        // Munculkan loader saat form dikirim (Kecuali form pencarian AJAX)
+        document.querySelectorAll('form:not(#search-form)').forEach(form => {
+            form.addEventListener('submit', () => {
+                loader.classList.add('visible');
+            });
+        });
+    }
+
+    // --- LOGIKA SMART STICKY TOPBAR ---
+    const globalTopbar = document.getElementById('global-topbar');
+    if (globalTopbar) {
+        let lastScroll = window.pageYOffset || document.documentElement.scrollTop;
+        window.addEventListener('scroll', () => {
+            let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            if (currentScroll > lastScroll && currentScroll > 20) {
+                // Scroll ke bawah: Tambahkan class transparent (background hilang)
+                globalTopbar.classList.add('transparent');
+            } else {
+                // Scroll ke atas: Hapus class transparent (background muncul)
+                globalTopbar.classList.remove('transparent');
+            }
+            lastScroll = currentScroll <= 0 ? 0 : currentScroll;
+        });
+    }
+
+    // --- LOGIKA MOBILE SIDEBAR TOGGLE ---
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.querySelector('.sidebar');
+    if (mobileMenuBtn && sidebar) {
+        mobileMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebar.classList.toggle('show');
+        });
+        document.addEventListener('click', (e) => {
+            if (!sidebar.contains(e.target) && sidebar.classList.contains('show')) {
+                sidebar.classList.remove('show');
+            }
+        });
     }
 
     // 2. --- LOGIKA POPUP TOAST ---

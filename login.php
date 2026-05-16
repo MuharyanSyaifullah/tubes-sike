@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </script>
     <?php endif; ?>
 </head>
-<body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: var(--surface);">
+<body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #d4f0ea;">
     <form method="post" class="card" style="padding: 40px; width: 100%; max-width: 400px; box-shadow: var(--shadow);">
         <div style="text-align: center; margin-bottom: 32px;">
             <h2 style="color: var(--primary-dark); margin-bottom: 8px;">SIK Rehabilitasi</h2>

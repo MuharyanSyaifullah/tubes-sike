@@ -11,7 +11,16 @@ require 'includes/functions.php';
 $pageTitle = 'Daftar Pasien';
 $activePage = 'patients';
 $search = trim($_GET['search'] ?? '');
-$patients = getPatients($pdo, $search);
+
+// Logika Paginasi (Maksimal 10 baris per halaman)
+$limit = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $limit;
+
+$patients = getPatients($pdo, $search, $limit, $offset);
+$totalPatients = getTotalPatientsCount($pdo, $search);
+$totalPages = ceil($totalPatients / $limit);
 
 require 'includes/header.php';
 ?>
@@ -21,7 +30,8 @@ require 'includes/header.php';
         <p>Data pasien tersimpan permanen di database MySQL.</p>
     </div>
     <?php if ($_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'admin'): ?>
-        <div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="export-csv.php?search=<?= urlencode($search) ?>" class="btn btn-secondary" style="box-shadow: var(--shadow);">Export Excel</a>
             <a href="add-patient.php" class="btn btn-primary">+ Pasien Baru</a>
         </div>
     <?php endif; ?>
@@ -64,6 +74,19 @@ require 'includes/header.php';
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <!-- Navigasi Tombol Pagination -->
+        <?php if ($totalPages > 1): ?>
+        <div style="display: flex; justify-content: center; gap: 8px; padding: 20px;">
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <a href="?search=<?= urlencode($search) ?>&page=<?= $i ?>" 
+                   class="btn <?= ($i === $page) ? 'btn-primary' : 'btn-secondary' ?>" 
+                   style="padding: 8px 14px; border-radius: 8px; font-size: 14px;">
+                    <?= $i ?>
+                </a>
+            <?php endfor; ?>
+        </div>
+        <?php endif; ?>
     </div>
     <?php if (empty($patients)): ?>
         <script>
@@ -90,6 +113,12 @@ require 'includes/header.php';
                 debounceTimer = setTimeout(() => {
                     const query = this.value;
                     
+                    // Tampilkan animasi loading spinner di tabel sebelum data selesai diambil
+                    patientsCard.innerHTML = `<div style="padding: 80px 20px; text-align: center; border-radius: 20px;">
+                        <div class="spinner" style="margin: 0 auto; border-color: var(--border); border-top-color: var(--primary-dark);"></div>
+                        <p class="muted" style="margin-top: 16px;">Mencari data pasien...</p>
+                    </div>`;
+
                     // Ambil data terbaru dari server tanpa me-reload halaman (AJAX)
                     fetch('patients.php?search=' + encodeURIComponent(query))
                         .then(response => response.text())
@@ -106,8 +135,10 @@ require 'includes/header.php';
                             const newUrl = new URL(window.location.href);
                             if (query) {
                                 newUrl.searchParams.set('search', query);
+                                newUrl.searchParams.set('page', 1); // Reset ke hal. 1 jika mencari
                             } else {
                                 newUrl.searchParams.delete('search');
+                                newUrl.searchParams.delete('page');
                             }
                             window.history.replaceState({}, '', newUrl);
                         })
