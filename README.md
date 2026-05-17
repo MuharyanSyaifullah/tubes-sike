@@ -24,6 +24,7 @@ Proyek ini dikembangkan sebagai Tugas Besar (Tubes) dengan menerapkan konsep kea
 
 📊 **Dashboard & Monitoring (IoT)**
 - **Visualisasi Data Interaktif:** Grafik perkembangan sudut kaki dan profil neurologis menggunakan **Chart.js**.
+- **Animasi UI & Feedback:** Popup notifikasi toast dan loading spinner untuk pengalaman pengguna lebih responsif.
 - **Critical Watchlist:** *Slider* daftar pasien berisiko tinggi yang dilengkapi dengan *Real-time Search* (AJAX).
 - **Status Medis:** Pemantauan Tanda Vital (*Heart Rate*, *SpO2*, *Blood Pressure*).
 
