@@ -31,7 +31,7 @@ require 'includes/header.php';
     </div>
     <?php if ($_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'admin'): ?>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <a href="print-patients.php?search=<?= urlencode($search) ?>" target="_blank" class="btn btn-secondary" style="box-shadow: var(--shadow); color: #2196F3; border-color: #bbdefb;">Cetak PDF</a>
+            <a href="print-patients.php?search=<?= urlencode($search) ?>" target="_blank" class="btn btn-secondary" style="box-shadow: var(--shadow); color: #536856; border-color: #C3D0C1; background: #F2F5F0;">Cetak PDF</a>
             <a href="export-csv.php?search=<?= urlencode($search) ?>" class="btn btn-secondary" style="box-shadow: var(--shadow);">Export Excel</a>
             <a href="add-patient.php" class="btn btn-primary">+ Pasien Baru</a>
         </div>
@@ -39,7 +39,7 @@ require 'includes/header.php';
 </div>
 
 <form id="search-form" class="search-row" method="get" style="background: var(--surface); padding: 12px; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow);">
-    <input id="search-input" name="search" class="input" placeholder="Cari nama pasien, kode rekam medis, atau diagnosis..." value="<?= h($search) ?>" style="border: none; background: #f4fbf6;" autocomplete="off">
+    <input id="search-input" name="search" class="input" placeholder="Cari nama pasien, kode rekam medis, atau diagnosis..." value="<?= h($search) ?>" style="border: none; background: #F2F5F0;" autocomplete="off">
     <button class="btn btn-primary" type="submit" style="min-width: 130px; border-radius: 14px; display: none;">Cari</button>
 </form>
 
@@ -82,7 +82,7 @@ require 'includes/header.php';
             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                 <a href="?search=<?= urlencode($search) ?>&page=<?= $i ?>" 
                    class="btn <?= ($i === $page) ? 'btn-primary' : 'btn-secondary' ?>" 
-                   style="padding: 8px 14px; border-radius: 8px; font-size: 14px;">
+                   style="padding: 8px 14px; border-radius: 12px; font-size: 14px;">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>

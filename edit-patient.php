@@ -61,9 +61,9 @@ require 'includes/header.php';
 <?php if ($message || $error): ?>
 <script>
     window.initialPopup = {
-        title: '<?= $message ? "Berhasil" : "Gagal" ?>',
-        message: '<?= $message ? h($message) : h($error) ?>',
-        type: '<?= $message ? "success" : "error" ?>'
+        title: <?= json_encode($message ? "Berhasil" : "Gagal") ?>,
+        message: <?= json_encode($message ? $message : $error) ?>,
+        type: <?= json_encode($message ? "success" : "error") ?>
     };
 </script>
 <?php endif; ?>

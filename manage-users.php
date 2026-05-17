@@ -107,9 +107,9 @@ require 'includes/header.php';
 <?php if ($success || $error): ?>
 <script>
     window.initialPopup = {
-        title: '<?= $success ? "Berhasil" : "Gagal" ?>',
-        message: '<?= $success ? h($success) : h($error) ?>',
-        type: '<?= $success ? "success" : "error" ?>'
+        title: <?= json_encode($success ? "Berhasil" : "Gagal") ?>,
+        message: <?= json_encode($success ? $success : $error) ?>,
+        type: <?= json_encode($success ? "success" : "error") ?>
     };
 </script>
 <?php endif; ?>

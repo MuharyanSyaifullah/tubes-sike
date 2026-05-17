@@ -13,9 +13,10 @@ $error = '';
 $success = '';
 
 // --- AUTO-GENERATE KODE REKAM MEDIS ---
-$stmtCode = $pdo->query("SELECT id FROM patients ORDER BY id DESC LIMIT 1");
-$lastId = (int)$stmtCode->fetchColumn();
-$autoCode = 'RM-' . str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
+$stmtCode = $pdo->query("SELECT code FROM patients WHERE code LIKE 'RM-%' ORDER BY CAST(SUBSTRING(code, 4) AS UNSIGNED) DESC LIMIT 1");
+$lastCode = $stmtCode->fetchColumn();
+$lastNum = $lastCode ? (int)substr($lastCode, 3) : 0;
+$autoCode = 'RM-' . str_pad($lastNum + 1, 4, '0', STR_PAD_LEFT);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
@@ -43,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $pdo->beginTransaction();
 
                         // 1. Buat record pasien baru secara otomatis
-                        $stmtPatient = $pdo->prepare("INSERT INTO patients (code, name, age, gender, address, diagnosis, disability_type, status, room, blood_type, admission_date, clinician, progress, phase, latest_assessment, heart_rate, spo2, blood_pressure) VALUES (?, ?, 0, 'L', 'Belum Diisi', 'Belum Didata', 'Mobility', 'stable', '-', '-', CURDATE(), '-', 0, 'Fase I', NOW(), 80, 98, '120/80')");
-                        $stmtPatient->execute([$patient_code, $username]);
+                            $stmtPatient = $pdo->prepare("INSERT INTO patients (code, name, age, gender, address, diagnosis, disability_type, status, room, blood_type, admission_date, clinician, progress, phase, latest_assessment, heart_rate, spo2, blood_pressure) VALUES (?, ?, 0, 'L', 'Belum Diisi', 'Belum Didata', 'Mobility', 'stable', '-', '-', CURDATE(), '-', 0, 'Fase I', NOW(), 80, 98, '120/80')");
+                            $stmtPatient->execute([$autoCode, $username]);
                         $patient_id = $pdo->lastInsertId();
 
                         // 2. Simpan user baru dan tautkan ke ID pasien
@@ -76,14 +77,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if ($success || $error): ?>
     <script>
         window.initialPopup = {
-            title: '<?= $success ? "Berhasil" : "Gagal" ?>',
-            message: '<?= $success ? htmlspecialchars($success) : htmlspecialchars($error) ?>',
-            type: '<?= $success ? "success" : "error" ?>'
+            title: <?= json_encode($success ? "Berhasil" : "Gagal") ?>,
+            message: <?= json_encode($success ? $success : $error) ?>,
+            type: <?= json_encode($success ? "success" : "error") ?>
         };
     </script>
     <?php endif; ?>
 </head>
-<body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #d4f0ea;">
+<body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #EAEFE9;">
     <form method="post" class="card" style="padding: 40px; width: 100%; max-width: 400px; box-shadow: var(--shadow);">
         <div style="text-align: center; margin-bottom: 32px;">
             <h2 style="color: var(--primary-dark); margin-bottom: 8px;">Daftar Akun Baru</h2>
@@ -91,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         
         <label class="label">Kode Rekam Medis (Otomatis)</label>
-        <input type="text" name="patient_code" class="input" style="margin-bottom: 20px; background: #e8f3ea; color: var(--primary-dark); font-weight: bold; cursor: not-allowed; border-color: transparent;" value="<?= $autoCode ?>" readonly>
+        <input type="text" name="patient_code" class="input" style="margin-bottom: 20px; background: #DDE5DD; color: var(--primary-dark); font-weight: bold; cursor: not-allowed; border-color: transparent;" value="<?= $autoCode ?>" readonly>
         
         <label class="label">Username</label><input type="text" name="username" class="input" style="margin-bottom: 20px;" placeholder="contoh : ryan" required autofocus>
         <label class="label">Password</label>

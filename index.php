@@ -87,7 +87,7 @@ require 'includes/header.php';
             $isSelected = $chartPatient && $chartPatient['id'] === $patient['id'];
             $cardStyle = 'cursor: pointer; transition: all 0.2s ease;';
             if ($isSelected) {
-                $cardStyle .= ' border: 2px solid var(--primary); box-shadow: 0 12px 28px rgba(74, 125, 93, 0.15); transform: translateY(-4px); background: #fdfdfd;';
+                $cardStyle .= ' border: 2px solid var(--primary); box-shadow: 0 12px 28px rgba(83, 104, 86, 0.15); transform: translateY(-4px); background: #fdfdfd;';
             }
             ?>
             <div class="card slider-card" style="<?= $cardStyle ?>" onclick="if(!event.target.closest('a')) window.location.href='?patient_id=<?= (int)$patient['id'] ?>'">
@@ -95,8 +95,8 @@ require 'includes/header.php';
                 <p class="muted"><?= h($patient['room']) ?> • <?= h($patient['diagnosis']) ?></p>
                 <p class="status <?= h($patient['status']) ?>"><?= h(statusLabel($patient['status'])) ?></p>
                 <div class="kv single" style="margin-top: 16px;">
-                    <div class="item" style="background: #fdfdfd; padding: 10px;"><strong>Heart Rate</strong><span style="color: var(--danger); font-weight: bold;"><?= h((string)$patient['heart_rate']) ?> bpm</span></div>
-                    <div class="item" style="background: #fdfdfd; padding: 10px;"><strong>SpO2</strong><span style="color: #2196F3; font-weight: bold;"><?= h((string)$patient['spo2']) ?>%</span></div>
+                    <div class="item" style="background: #fdfdfd; padding: 10px;"><strong>Heart Rate</strong><span style="color: #B46C6C; font-weight: bold;"><?= h((string)$patient['heart_rate']) ?> bpm</span></div>
+                    <div class="item" style="background: #fdfdfd; padding: 10px;"><strong>SpO2</strong><span style="color: #5C7C8A; font-weight: bold;"><?= h((string)$patient['spo2']) ?>%</span></div>
                     <div class="item"><strong>Progress</strong><span><?= h((string)$patient['progress']) ?>%</span></div>
                 </div>
                 <div class="footer-actions">

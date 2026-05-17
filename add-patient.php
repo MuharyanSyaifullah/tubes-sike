@@ -44,9 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // --- AUTO-GENERATE KODE REKAM MEDIS ---
-$stmtCode = $pdo->query("SELECT id FROM patients ORDER BY id DESC LIMIT 1");
-$lastId = (int)$stmtCode->fetchColumn();
-$autoCode = 'RM-' . str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
+$stmtCode = $pdo->query("SELECT code FROM patients WHERE code LIKE 'RM-%' ORDER BY CAST(SUBSTRING(code, 4) AS UNSIGNED) DESC LIMIT 1");
+$lastCode = $stmtCode->fetchColumn();
+$lastNum = $lastCode ? (int)substr($lastCode, 3) : 0;
+$autoCode = 'RM-' . str_pad($lastNum + 1, 4, '0', STR_PAD_LEFT);
 
 require 'includes/header.php';
 ?>
@@ -58,9 +59,9 @@ require 'includes/header.php';
 <?php if ($message || $error): ?>
 <script>
     window.initialPopup = {
-        title: '<?= $message ? "Berhasil" : "Gagal" ?>',
-        message: '<?= $message ? h($message) : h($error) ?>',
-        type: '<?= $message ? "success" : "error" ?>'
+        title: <?= json_encode($message ? "Berhasil" : "Gagal") ?>,
+        message: <?= json_encode($message ? $message : $error) ?>,
+        type: <?= json_encode($message ? "success" : "error") ?>
     };
 </script>
 <?php endif; ?>
@@ -70,7 +71,7 @@ require 'includes/header.php';
     <div class="form-grid" style="margin-bottom: 28px;">
         <div>
             <label class="label">Kode Rekam Medis (Otomatis)</label>
-            <input name="code" class="input" type="text" value="<?= $autoCode ?>" readonly style="background: #e8f3ea; color: var(--primary-dark); font-weight: bold; cursor: not-allowed; border-color: transparent;">
+            <input name="code" class="input" type="text" value="<?= $autoCode ?>" readonly style="background: #DDE5DD; color: var(--primary-dark); font-weight: bold; cursor: not-allowed; border-color: transparent;">
         </div>
         <div>
             <label class="label">Nama Lengkap (Wajib)</label>

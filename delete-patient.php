@@ -7,7 +7,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] === 'user') {
 
 require 'includes/db.php';
 
-$id = (int)($_GET['id'] ?? 0);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    // Mencegah penghapusan via URL langsung (GET)
+    die('Metode tidak diizinkan.');
+}
+
+$id = (int)($_POST['id'] ?? 0);
 
 if ($id) {
     try {

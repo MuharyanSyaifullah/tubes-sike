@@ -49,10 +49,13 @@ require 'includes/header.php';
             <div class="item"><strong>Fase Rehabilitasi</strong><span><?= h($patient['phase']) ?></span></div>
         </div>
         <div class="mt-18" style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <a href="print-patient.php?id=<?= $id ?>" target="_blank" class="btn btn-primary" style="padding: 8px 16px; background: #2196F3; box-shadow: 0 14px 24px rgba(33, 150, 243, 0.18);">Cetak Laporan PDF</a>
+            <a href="print-patient.php?id=<?= $id ?>" target="_blank" class="btn btn-primary" style="padding: 8px 16px; background: #6B8E7B; box-shadow: 0 14px 24px rgba(107, 142, 123, 0.18); border: none;">Cetak Laporan PDF</a>
         <?php if ($_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'admin'): ?>
             <a href="edit-patient.php?id=<?= $id ?>" class="btn btn-secondary" style="padding: 8px 16px;">Edit Data</a>
-            <a href="delete-patient.php?id=<?= $id ?>" class="btn btn-secondary" style="padding: 8px 16px; color: var(--danger); border-color: #f3c1be; background: #fffcfc;" onclick="return confirm('PERINGATAN!\n\nApakah Anda yakin ingin menghapus data pasien ini secara permanen? Semua riwayat laporan dan data sensor juga akan ikut terhapus.')">Hapus Pasien</a>
+            <form method="post" action="delete-patient.php" style="margin: 0; display: inline-block;" onsubmit="return confirm('PERINGATAN!\n\nApakah Anda yakin ingin menghapus data pasien ini secara permanen? Semua riwayat laporan dan data sensor juga akan ikut terhapus.')">
+                <input type="hidden" name="id" value="<?= $id ?>">
+                <button type="submit" class="btn btn-secondary" style="padding: 8px 16px; color: #B46C6C; border-color: #E8C8C8; background: #FCF7F7;">Hapus Pasien</button>
+            </form>
         <?php endif; ?>
         </div>
     </div>
@@ -92,9 +95,9 @@ require 'includes/header.php';
     <div class="card">
         <h3>Vital Signs</h3>
         <div class="kv single">
-            <div class="item" style="border-left: 4px solid var(--danger);"><strong>Heart Rate</strong><span style="font-size: 1.15rem; font-weight: bold; color: var(--danger);"><?= h((string)$patient['heart_rate']) ?> bpm</span></div>
-            <div class="item" style="border-left: 4px solid #2196F3;"><strong>SpO2</strong><span style="font-size: 1.15rem; font-weight: bold; color: #2196F3;"><?= h((string)$patient['spo2']) ?>%</span></div>
-            <div class="item" style="border-left: 4px solid var(--warning);"><strong>Blood Pressure</strong><span style="font-size: 1.15rem; font-weight: bold; color: var(--warning);"><?= h($patient['blood_pressure']) ?></span></div>
+            <div class="item" style="border-left: 4px solid #B46C6C;"><strong>Heart Rate</strong><span style="font-size: 1.15rem; font-weight: bold; color: #B46C6C;"><?= h((string)$patient['heart_rate']) ?> bpm</span></div>
+            <div class="item" style="border-left: 4px solid #5C7C8A;"><strong>SpO2</strong><span style="font-size: 1.15rem; font-weight: bold; color: #5C7C8A;"><?= h((string)$patient['spo2']) ?>%</span></div>
+            <div class="item" style="border-left: 4px solid #C5A059;"><strong>Blood Pressure</strong><span style="font-size: 1.15rem; font-weight: bold; color: #C5A059;"><?= h($patient['blood_pressure']) ?></span></div>
             <div class="item" style="border-left: 4px solid var(--success);"><strong>Progress Keseluruhan</strong><div class="progress" style="margin-top: 8px;"><span style="width: <?= (int)$patient['progress'] ?>%"></span></div></div>
         </div>
     </div>

@@ -29,7 +29,18 @@ try {
     $pdo->beginTransaction();
 
     // Membersihkan data pasien yang lama agar kita punya 100 data yang benar-benar bersih dan rapi
+    $pdo->exec("DELETE FROM sensor_readings");
+    $pdo->exec("DELETE FROM reports");
+    $pdo->exec("UPDATE users SET patient_id = NULL");
     $pdo->exec("DELETE FROM patients");
+
+    // Memastikan akun superadmin, admin, dan user default selalu ada dan tidak hilang
+    $defaultPass = password_hash('password', PASSWORD_DEFAULT);
+    $pdo->exec("INSERT IGNORE INTO users (username, password, role) VALUES 
+        ('superadmin', '$defaultPass', 'super_admin'),
+        ('admin', '$defaultPass', 'admin'),
+        ('user', '$defaultPass', 'user')
+    ");
 
     for ($i = 1; $i <= 100; $i++) {
         $name = $firstNames[array_rand($firstNames)] . ' ' . $lastNames[array_rand($lastNames)];
@@ -80,12 +91,12 @@ try {
     }
 
     $pdo->commit();
-    echo "<h3 style='color: #2d8b55;'>Berhasil!</h3>";
+    echo "<h3 style='color: #536856;'>Berhasil!</h3>";
     echo "<p>100 Data Pasien beserta riwayat Laporan dan Grafik Sensor Gyroscope-nya telah disuntikkan ke dalam MySQL!</p>";
-    echo "<a href='index.php' style='display: inline-block; padding: 12px 24px; background: #4a7d5d; color: white; border-radius: 12px; text-decoration: none; font-weight: bold; margin-top: 20px;'>Kembali ke Dashboard SIK</a>";
+    echo "<a href='index.php' style='display: inline-block; padding: 12px 24px; background: #78907C; color: white; border-radius: 12px; text-decoration: none; font-weight: bold; margin-top: 20px;'>Kembali ke Dashboard SIK</a>";
 } catch (Exception $e) {
     $pdo->rollBack();
-    echo "<h3 style='color: red;'>Gagal mengeksekusi Seeder:</h3>";
+    echo "<h3 style='color: #B46C6C;'>Gagal mengeksekusi Seeder:</h3>";
     echo "<p>" . $e->getMessage() . "</p>";
 }
 echo "</div>";
